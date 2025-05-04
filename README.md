@@ -32,6 +32,15 @@ async def main():
         prompt="Make this black and white",
         output_file="edited_image.png"
     )
+
+     # Make your portrait in star wars starry night style
+    await client.edit_image(
+        image_path="yout_portrait.png",
+        prompt="""Transform it into A high-resolution digital portrait inspired by the Star Wars universe. He is sitting in a dimly lit sci-fi environment with soft, ambient lighting. He wears futuristic robes or gear that reflect a Jedi or rebel aesthetic. His surroundings include subtle sci-fi elements like control panels or holograms. Put A metallic high tech moon with an hole  in the sky. The image is photo-realistic and cinematic. Make it a pinting in the starry night style""",
+        output_file="starwarsstarrynight.png"
+    )
+    
+
 # Run the example
 asyncio.run(main())
 ```
