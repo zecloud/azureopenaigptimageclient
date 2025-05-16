@@ -15,18 +15,18 @@ Here is an example of how to use the client:
 
 ```python
 import asyncio
-from azureopenaigptimageclient import GPTImageClient
+from gptimageclient import GPTImageClient
 
 async def main():
     # Initialize the client with your Azure API key and endpoint
     client = GPTImageClient(api_key="your-api-key", endpoint="your-endpoint")
 
     # Generate an image
-    response = await client.generate_image(prompt="A futuristic cityscape at sunset")
+    response = await client.generate_image_async(prompt="A futuristic cityscape at sunset")
     print(response)
 
      # Edit an image
-    await client.edit_image(
+    await client.edit_image_async(
         image_path="image_to_edit.png",
         mask_path="mask.png",
         prompt="Make this black and white",
@@ -34,7 +34,7 @@ async def main():
     )
 
      # Make your portrait in star wars starry night style
-    await client.edit_image(
+    await client.edit_image_async(
         image_path="yout_portrait.png",
         prompt="""Transform it into A high-resolution digital portrait inspired by the Star Wars universe. He is sitting in a dimly lit sci-fi environment with soft, ambient lighting. He wears futuristic robes or gear that reflect a Jedi or rebel aesthetic. His surroundings include subtle sci-fi elements like control panels or holograms. Put A metallic high tech moon with an hole  in the sky. The image is photo-realistic and cinematic. Make it a pinting in the starry night style""",
         output_file="starwarsstarrynight.png"

@@ -7,7 +7,7 @@ from pathlib import Path
 import logging
 
 
-class GPTImageClient:
+class GptImageClient:
     """
     Client for Azure OpenAI image generation and editing capabilities using httpx.
     """
@@ -28,7 +28,7 @@ class GPTImageClient:
         """
         self.endpoint = endpoint
         self.deployment_name = deployment_name
-        self.api_key = api_key or os.environ.get("AZURE_API_KEY")
+        self.api_key = api_key or os.environ.get("GPTIMAGE1KEY")
         self.api_version = api_version
         
         if not self.api_key:
@@ -45,7 +45,7 @@ class GPTImageClient:
                             size: str = "1024x1024", 
                             quality: str = "auto", 
                             n: int = 1,
-                            output_file: Optional[str] = None) -> Union[bytes, str]:
+                            output_file: Optional[str] = None) -> Union[bytes, str,None]:
         """
         Synchronous method to generate an image based on the provided prompt.
         """
@@ -59,10 +59,11 @@ class GPTImageClient:
         }
         
         try:
-            with httpx.Client() as client:
+            with httpx.Client(timeout=None) as client:
                 response = client.post(url, headers=self.headers, json=payload)
                 if response.status_code != 200:
-                    raise Exception(f"Failed to generate image: {response.status_code} - {response.text}")
+                    logging.error(f"Failed to generate image: {response.status_code} - {response.text}")
+                    #raise Exception(f"Failed to generate image: {response.status_code} - {response.text}")
                 
                 response_data = response.json()
                 image_b64 = response_data["data"][0]["b64_json"]
@@ -76,7 +77,7 @@ class GPTImageClient:
                     return image_data
         except Exception as e:
             logging.error(f"Error generating image: {e}")
-            raise
+            return None
     
     # Asynchronous Method for Image Generation
     async def generate_image_async(self, 
@@ -98,7 +99,7 @@ class GPTImageClient:
         }
         
         try:
-            async with httpx.AsyncClient() as client:
+            async with httpx.AsyncClient(timeout=None) as client:
                 response = await client.post(url, headers=self.headers, json=payload)
                 if response.status_code != 200:
                     raise Exception(f"Failed to generate image: {response.status_code} - {response.text}")
@@ -131,9 +132,7 @@ class GPTImageClient:
         """
         url = f"{self.endpoint}/openai/deployments/{self.deployment_name}/images/edits?api-version={self.api_version}"
         
-        headers = {
-            "api-key": self.api_key,
-        }
+        
         
         with open(image_path, "rb") as image_file:
             files = {"image": image_file}
@@ -143,8 +142,8 @@ class GPTImageClient:
                     files["mask"] = mask_file
             
             try:
-                with httpx.Client() as client:
-                    response = client.post(url, headers=headers, files=files)
+                with httpx.Client(timeout=None) as client:
+                    response = client.post(url, headers=self.headers, files=files)
                     if response.status_code != 200:
                         raise Exception(f"Failed to edit image: {response.status_code} - {response.text}")
                     
@@ -162,7 +161,7 @@ class GPTImageClient:
                 logging.error(f"Error editing image: {e}")
                 raise
     
-    # Asynchronous Method for Image Editing
+    #Asynchronous Method for Image Editing
     async def edit_image_async(self, 
                                image_path: str, 
                                prompt: str,
@@ -176,9 +175,7 @@ class GPTImageClient:
         """
         url = f"{self.endpoint}/openai/deployments/{self.deployment_name}/images/edits?api-version={self.api_version}"
         
-        headers = {
-            "api-key": self.api_key,
-        }
+    
         
         with open(image_path, "rb") as image_file:
             files = {"image": image_file}
@@ -188,8 +185,8 @@ class GPTImageClient:
                     files["mask"] = mask_file
             
             try:
-                async with httpx.AsyncClient() as client:
-                    response = await client.post(url, headers=headers, files=files)
+                async with httpx.AsyncClient(timeout=None) as client:
+                    response = await client.post(url, headers=self.headers, files=files)
                     if response.status_code != 200:
                         raise Exception(f"Failed to edit image: {response.status_code} - {response.text}")
                     
