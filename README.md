@@ -11,7 +11,7 @@ An asynchronous Python client for interacting with the Azure OpenAI GPT-Image AP
 
 ## Usage
 
-Here is an example of how to use the client:
+Here is an example of how to use the Python client:
 
 ```python
 import asyncio
@@ -45,6 +45,38 @@ async def main():
 asyncio.run(main())
 ```
 
+Here is an example of how to use the C# client:
+
+```csharp
+using System;
+using System.Threading.Tasks;
+
+public class Program
+{
+    public static async Task Main(string[] args)
+    {
+        // Initialize the client with your Azure API key and endpoint
+        var client = new GptImageClient("your-endpoint", "gpt-image-1", "your-api-key");
+
+        // Generate an image asynchronously
+        var imageData = await client.GenerateImageAsync("A futuristic cityscape at sunset");
+        Console.WriteLine("Image generated asynchronously");
+
+        // Edit an image asynchronously
+        var editedImageData = await client.EditImageAsync("image_to_edit.png", "Make this black and white", "mask.png", null, "auto", "auto", "edited_image.png");
+        Console.WriteLine("Image edited asynchronously");
+
+        // Generate an image synchronously
+        var syncImageData = client.GenerateImageSync("A futuristic cityscape at sunset");
+        Console.WriteLine("Image generated synchronously");
+
+        // Edit an image synchronously
+        var syncEditedImageData = client.EditImageSync("image_to_edit.png", "Make this black and white", "mask.png", null, "auto", "auto", "edited_image.png");
+        Console.WriteLine("Image edited synchronously");
+    }
+}
+```
+
 ## Configuration
 
 The client requires the following:
@@ -53,6 +85,8 @@ The client requires the following:
 - **Endpoint**: The endpoint URL for your Azure OpenAI GPT-Image service.
 
 You can set these values when initializing the client.
+
+For the C# client, you can set the API key using an environment variable `AZURE_API_KEY` or pass it directly to the `GptImageClient` constructor.
 
 ## Development
 
