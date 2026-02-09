@@ -3,18 +3,17 @@ requires = ["setuptools>=45", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "mon-package"
+name = "azureopenaigptimageclient"
 version = "0.1.0"
-description = "Description courte de votre package"
+description = "An async python client for Azure Open AI gpt-image 1 client and for Azure AI Foundry SORA"
 readme = "README.md"
 requires-python = ">=3.7"
 license = {text = "MIT"}
 authors = [
-    {name = "Votre Nom", email = "votre@email.com"}
+    {name = "zecloud", email = "votre@email.com"}
 ]
 dependencies = [
-    # Listez vos dépendances ici
-    httpx,
+    "httpx>=0.23.0"
 ]
 
 [project.urls]
