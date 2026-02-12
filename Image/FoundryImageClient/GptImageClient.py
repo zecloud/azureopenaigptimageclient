@@ -318,6 +318,7 @@ class GptImageClient:
     async def flux2edit_image_async(self,
                                     prompt: str,
                                     images: List[Union[str, Path, bytes, bytearray]],
+                                    size: str = "1024x1024", 
                                     output_file: Optional[str] = None) -> Union[bytes, str, dict]:
         """Edit images with FLUX.2 by sending up to 8 base64-encoded inputs."""
         model_name: str = "FLUX.2-pro"
@@ -331,7 +332,9 @@ class GptImageClient:
         payload = {
             "model": model_name,
             "prompt": prompt,
-            "output_format": self.output_format
+            "output_format": self.output_format,
+            "width": int(size.split('x')[0],
+            "height" = int(size.split('x')[1]
         }
 
         encoded_images: List[str] = []
@@ -382,4 +385,5 @@ class GptImageClient:
             return response_data
         except Exception as e:
             logging.error(f"Error editing images with FLUX.2: {e}")
+
             raise
