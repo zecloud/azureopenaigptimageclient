@@ -333,8 +333,8 @@ class GptImageClient:
             "model": model_name,
             "prompt": prompt,
             "output_format": self.output_format,
-            "width": int(size.split('x')[0],
-            "height" : int(size.split('x')[1]
+            "width": int(size.split('x')[0]),
+            "height" : int(size.split('x')[1])
         }
 
         encoded_images: List[str] = []
@@ -387,4 +387,5 @@ class GptImageClient:
             logging.error(f"Error editing images with FLUX.2: {e}")
 
             raise
+
 
