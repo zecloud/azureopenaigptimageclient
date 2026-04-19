@@ -206,17 +206,33 @@ class GptImageClient:
     
     #Asynchronous Method for Image Editing
     async def edit_image_async(self, 
-                               image_path: str, 
                                prompt: str,
+                               image_path: Optional[str] = None,
                                mask_path: Optional[str] = None,
                                additional_images: Optional[List[str]] = None,
                                size: str = "1024x1024",
                                quality: str = "auto",
                                n: int = 1,
-                               output_file: Optional[str] = None) -> Union[bytes, str]:
+                               output_file: Optional[str] = None,
+                               images: Optional[List[Union[str, Path, bytes, bytearray]]] = None) -> Union[bytes, str]:
         """
         Asynchronous method to edit an existing image with a prompt and optional mask.
+        
+        Parameters:
+            prompt (str): The editing prompt.
+            image_path (str, optional): Path to the primary image file.
+            mask_path (str, optional): Path to a mask image file.
+            additional_images (list, optional): List of additional image file paths.
+            size (str): Output image size.
+            quality (str): Output image quality.
+            n (int): Number of images to generate.
+            output_file (str, optional): Path to save the output image.
+            images (list, optional): List of images (file paths or bytes) to edit.
+                Can be used as an alternative to image_path.
         """
+        if image_path is None and images is None:
+            raise ValueError("Either 'image_path' or 'images' must be provided")
+
         api_verb = "/images/edits"
         url = f"{self.endpoint}{self.midurl}{self.endpointend}{api_verb}?api-version={self.api_version}"
         
@@ -229,37 +245,35 @@ class GptImageClient:
         if self.model == self.ImageModel.FLUX:
             payload["output_format"] = self.output_format
             payload.pop("quality", None)
-            #payload.pop("size", None)  # Remove size if output_format is specified
-            #width = int(size.split('x')[0])
-            #height = int(size.split('x')[1])
-            # if width > height:
-            #     payload["aspect_ratio"] = "16:9"
-            # else:
-            #     payload["aspect_ratio"] = "9:16"
             payload["model"] = "flux.1-kontext-pro"
 
         files = []
         opened_files = []  # Pour garder track des fichiers ouverts
 
         try:
-            # Image principale
-            image_file = open(image_path, "rb")
-            #if self.model == self.ImageModel.GPT_IMAGE:
-            opened_files.append(image_file)
-            files.append(("image[]", ("image.png", image_file, "image/png")))
-            #elif self.model == self.ImageModel.FLUX:
-            #    inputimgbase64 = base64.b64encode(image_file.read())
-            #    payload["input_image"] = inputimgbase64.decode('utf-8')
+            if images is not None:
+                # Use the 'images' list parameter
+                for idx, img in enumerate(images):
+                    if isinstance(img, (str, Path)):
+                        img_file = open(img, "rb")
+                        opened_files.append(img_file)
+                        files.append(("image[]", (f"image_{idx}.png", img_file, "image/png")))
+                    elif isinstance(img, (bytes, bytearray)):
+                        files.append(("image[]", (f"image_{idx}.png", bytes(img), "image/png")))
+                    else:
+                        raise TypeError("Images must be file paths (str/Path) or bytes-like objects")
+            else:
+                # Use the legacy image_path parameter
+                image_file = open(image_path, "rb")
+                opened_files.append(image_file)
+                files.append(("image[]", ("image.png", image_file, "image/png")))
+
             # Images supplémentaires avec la syntaxe tableau
             if additional_images:
                 for idx, additional_image in enumerate(additional_images):
                     add_img_file = open(additional_image, "rb")
-                    #if self.model == self.ImageModel.GPT_IMAGE:
                     opened_files.append(add_img_file)
                     files.append(("image[]", (f"additional_image_{idx}.png", add_img_file, "image/png")))
-                    #elif self.model == self.ImageModel.FLUX:
-                    #    add_img_base64 = base64.b64encode(add_img_file.read())
-                    #    payload[f"input_image_{idx}"] = add_img_base64.decode('utf-8')
 
             # Masque optionnel
             if mask_path and self.model == self.ImageModel.GPT_IMAGE:

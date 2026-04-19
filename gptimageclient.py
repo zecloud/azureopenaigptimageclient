@@ -164,17 +164,33 @@ class GptImageClient:
     
     #Asynchronous Method for Image Editing
     async def edit_image_async(self, 
-                               image_path: str, 
                                prompt: str,
+                               image_path: Optional[str] = None,
                                mask_path: Optional[str] = None,
                                additional_images: Optional[List[str]] = None,
                                size: str = "1024x1024",
                                quality: str = "auto",
                                n: int = 1,
-                               output_file: Optional[str] = None) -> Union[bytes, str]:
+                               output_file: Optional[str] = None,
+                               images: Optional[List[Union[str, Path, bytes, bytearray]]] = None) -> Union[bytes, str]:
         """
         Asynchronous method to edit an existing image with a prompt and optional mask.
+        
+        Parameters:
+            prompt (str): The editing prompt.
+            image_path (str, optional): Path to the primary image file.
+            mask_path (str, optional): Path to a mask image file.
+            additional_images (list, optional): List of additional image file paths.
+            size (str): Output image size.
+            quality (str): Output image quality.
+            n (int): Number of images to generate.
+            output_file (str, optional): Path to save the output image.
+            images (list, optional): List of images (file paths or bytes) to edit.
+                Can be used as an alternative to image_path.
         """
+        if image_path is None and images is None:
+            raise ValueError("Either 'image_path' or 'images' must be provided")
+
         url = f"{self.endpoint}/openai/deployments/{self.deployment_name}/images/edits?api-version={self.api_version}"
         
         payload = {
@@ -187,11 +203,23 @@ class GptImageClient:
         opened_files = []  # Pour garder track des fichiers ouverts
 
         try:
-            # Image principale
-            image_file = open(image_path, "rb")
-            opened_files.append(image_file)
-            files.append(("image[]", ("image.png", image_file, "image/png")))
-            
+            if images is not None:
+                # Use the 'images' list parameter
+                for idx, img in enumerate(images):
+                    if isinstance(img, (str, Path)):
+                        img_file = open(img, "rb")
+                        opened_files.append(img_file)
+                        files.append(("image[]", (f"image_{idx}.png", img_file, "image/png")))
+                    elif isinstance(img, (bytes, bytearray)):
+                        files.append(("image[]", (f"image_{idx}.png", bytes(img), "image/png")))
+                    else:
+                        raise TypeError("Images must be file paths (str/Path) or bytes-like objects")
+            else:
+                # Use the legacy image_path parameter
+                image_file = open(image_path, "rb")
+                opened_files.append(image_file)
+                files.append(("image[]", ("image.png", image_file, "image/png")))
+
             # Images supplémentaires avec la syntaxe tableau
             if additional_images:
                 for idx, additional_image in enumerate(additional_images):
